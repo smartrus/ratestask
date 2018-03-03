@@ -19,8 +19,6 @@ def create_app(config_name):
     app.config.from_object(app_config[config_name])
     app.config.from_pyfile('config.py')
 
-
-
     @app.route('/rates', methods=['GET'])
     def rates():
         global conn
@@ -28,30 +26,23 @@ def create_app(config_name):
             # GET
             results = []
 
-            # Try to connect
+            # parsing get request arguments
+            date_from = request.args.get('date_from')
+            date_to = request.args.get('date_to')
+            origin = request.args.get('origin')
+            destination = request.args.get('destination')
 
+            # Try to connect
             try:
                 conn = psycopg2.connect("host='127.0.0.1' dbname='postgres' user='postgres' password=''")
-                # conn = psycopg2.connect('dbname=postgres')
                 cur = conn.cursor(cursor_factory=RealDictCursor)
-                cur.execute("""SELECT * FROM prices""")
+                # cur.execute("""SELECT * FROM prices""")
+                cur.execute("SELECT * FROM prices WHERE orig_code = %s", [(origin)])
                 obj = json.dumps(cur.fetchall(), indent=2)
+                results.append(obj)
             except:
                 print
                 "I am unable to connect to the database."
-
-
-            # cur = conn.cursor()
-
-            # obj = json.dumps(cur.fetchall(), indent=2)
-
-            #obj = {
-            #     'orig_code': 'CNSGH',
-            #     'dest_code': 'EETLL',
-            #     'day': '2016-01-01',
-            #     'price': '1244'
-            #}
-            results.append(obj)
 
             response = jsonify(results)
             response.status_code = 200
