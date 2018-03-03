@@ -12,6 +12,14 @@ class RatesTestCase(unittest.TestCase):
         self.app = create_app(config_name="testing")
         self.client = self.app.test_client
 
+    # my smoke test
+    def test_api_can_get_prices(self):
+        """Test API can get a single rate by using it's id."""
+        result = self.client().get(
+            'rates?getprices=1')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('CNSGH', str(result.data))
+
     def test_api_can_get_rates_by_id(self):
         """Test API can get a single rate by using it's id."""
         result = self.client().get(
