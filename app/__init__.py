@@ -34,13 +34,14 @@ def create_app(config_name):
 
             # Try to connect
             try:
-                query = """SELECT * FROM prices WHERE (day BETWEEN %s AND %s)
+                query = """SELECT to_char(day, 'YYYY-MM-DD') AS day, to_char(AVG(price),'FM999999999') AS average_price
+                            FROM prices WHERE (day BETWEEN %s AND %s)
                             AND (orig_code = %s OR orig_code IN (SELECT code FROM ports WHERE parent_slug = %s)
                               OR orig_code IN (SELECT code FROM ports WHERE parent_slug IN
                                 (SELECT slug FROM regions WHERE parent_slug = %s)))
                             AND (dest_code = %s OR dest_code IN (SELECT code FROM ports WHERE parent_slug = %s)
                               OR dest_code IN (SELECT code FROM ports WHERE parent_slug IN
-                                (SELECT slug FROM regions WHERE parent_slug = %s)))"""
+                                (SELECT slug FROM regions WHERE parent_slug = %s))) GROUP BY day"""
                 conn = psycopg2.connect("host='127.0.0.1' dbname='postgres' user='postgres' password=''")
                 cur = conn.cursor(cursor_factory=RealDictCursor)
                 cur.execute(query,(date_from, date_to, origin, origin, origin, destination, destination, destination))
