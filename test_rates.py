@@ -94,7 +94,50 @@ class RatesTestCase(unittest.TestCase):
         self.assertEqual(result.status_code, 400)
         self.assertIn('date_to must not be less than date_from', str(result.data))
 
-    # TODO: a post request from the task
+    # A post request with no date_from
+    def test_api_post_with_no_date_from(self):
+        """Check a get request with no date_from."""
+        result = self.client().post('rates',
+                                    data=dict(date_to='2018-02-10',
+                                     price='1000', origin_code='CNSGH', destination_code='CNSGH'))
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('provide date_from', str(result.data))
+
+    # A post request with no date_to
+    def test_api_post_with_no_date_to(self):
+        """Check a get request with no date_to"""
+        result = self.client().post('rates',
+                                    data=dict(date_from='2018-02-01', price='1000', origin_code='CNSGH',
+                                     destination_code='CNSGH'))
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('provide date_to', str(result.data))
+
+    # A post request with no price
+    def test_api_post_with_no_price(self):
+        """Check a get request with no price"""
+        result = self.client().post('rates',
+                                    data=dict(date_from='2018-02-01', date_to='2018-02-10', origin_code='CNSGH',
+                                     destination_code='CNSGH'))
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('provide price', str(result.data))
+
+    # A post request with no origin_code
+    def test_api_post_with_no_origin_code(self):
+        """Check a get request with no origin_code"""
+        result = self.client().post('rates',
+                                    data=dict(date_from='2018-02-01', date_to='2018-02-10', price='1000',
+                                     destination_code='CNSGH'))
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('provide origin_code', str(result.data))
+
+    # A post request with no origin_code
+    def test_api_post_with_no_origin_code(self):
+        """Check a get request with no origin_code"""
+        result = self.client().post('rates',
+                                    data=dict(date_from='2018-02-01', date_to='2018-02-10', price='1000',
+                                     destination_code='CNSGH'))
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('provide origin_code', str(result.data))
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
