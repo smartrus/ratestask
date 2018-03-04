@@ -1,7 +1,5 @@
 # test_rates.py
 import unittest
-import os
-import json
 from app import create_app
 
 class RatesTestCase(unittest.TestCase):
@@ -21,9 +19,9 @@ class RatesTestCase(unittest.TestCase):
     #     self.assertEqual(result.status_code, 200)
     #     self.assertIn('CNSGH', str(result.data))
 
-    # a get request from the task that should be executed successfully
-    def test_api_can_get_rates_by_id(self):
-        """Test API can get a single rate by using it's id."""
+    # a get request from the task description that should be executed successfully
+    def test_api_can_get_rates(self):
+        """Check a get request from the task description."""
         result = self.client().get(
             'rates?date_from=2016-01-01&date_to=2016-01-10&origin=CNSGH&destination=north_europe_main')
         self.assertEqual(result.status_code, 200)
@@ -31,6 +29,70 @@ class RatesTestCase(unittest.TestCase):
         self.assertIn('2016-01-01', str(result.data))
         self.assertIn('2016-01-10', str(result.data))
         self.assertIn('1142', str(result.data))
+
+    # a get request to the wrong path
+    def test_api_with_wrong_path(self):
+        """Check a get request to the wrong path."""
+        result = self.client().get(
+            'rate?date_from=2016-01-01&date_to=2016-01-10&origin=CNSGH&destination=north_europe_main')
+        self.assertEqual(result.status_code, 410)
+        self.assertIn('incorrect URL', str(result.data))
+
+    # a get request with no date_from
+    def test_api_with_no_date_from(self):
+        """Check a get request with no date_from."""
+        result = self.client().get(
+            'rates?date_to=2016-01-10&origin=CNSGH&destination=north_europe_main')
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('provide date_from', str(result.data))
+
+    # A get request with no date_to
+    def test_api_with_no_date_to(self):
+        """Check a get request with no date_to."""
+        result = self.client().get(
+            'rates?date_from=2016-01-10&origin=CNSGH&destination=north_europe_main')
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('provide date_to', str(result.data))
+
+    # A get request with no origin
+    def test_api_with_no_origin(self):
+        """Check a get request with no origin."""
+        result = self.client().get(
+            'rates?date_from=2016-01-01&date_to=2016-01-10&destination=north_europe_main')
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('provide origin', str(result.data))
+
+    # A get request with no destination
+    def test_api_with_no_destination(self):
+        """Check a get request with no destination."""
+        result = self.client().get(
+            'rates?date_from=2016-01-01&date_to=2016-01-10&origin=north_europe_main')
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('provide destination', str(result.data))
+
+    # A get request with incorrect strings in date_from
+    def test_api_with_incorrect_date_from(self):
+        """Check a get request with incorrect strings in date_from."""
+        result = self.client().get(
+            'rates?date_from=2016-01&date_to=2016-01-10&origin=north_europe_main')
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('Incorrect date format', str(result.data))
+
+    # A get request with incorrect strings in date_to
+    def test_api_with_incorrect_date_to(self):
+        """Check a get request with incorrect strings in date_to."""
+        result = self.client().get(
+            'rates?date_from=2016-01-01&date_to=2016-010&origin=north_europe_main')
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('Incorrect date format', str(result.data))
+
+    # A get request with date_to greater than date_from
+    def test_api_with_date_to_greater_than_date_from(self):
+        """Check a get request with incorrect strings in date_to."""
+        result = self.client().get(
+            'rates?date_from=2016-02-01&date_to=2016-01-10&origin=CNSGH&destination=north_europe_main')
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('date_to must not be less than date_from', str(result.data))
 
     # TODO: a post request from the task
 
