@@ -13,7 +13,7 @@ class RatesTestCase(unittest.TestCase):
     # my smoke test - do not need it anymore
     # tries to get all the prices and checks if CNSGH is in the returned data
     # def test_api_can_get_prices(self):
-    #     """Test API can get a single rate by using it's id."""
+    #     """Test API can get all prices."""
     #     result = self.client().get(
     #         'rates?getprices=1')
     #     self.assertEqual(result.status_code, 200)

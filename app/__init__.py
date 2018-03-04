@@ -49,11 +49,17 @@ def create_app(config_name):
         response.status_code = error.status_code
         return response
 
-    def validate(date_text):
+    def validate_date(date_text):
         try:
             datetime.strptime(date_text, '%Y-%m-%d')
         except ValueError:
             raise InvalidUsage('Incorrect date format, should be YYYY-MM-DD!', status_code=400)
+        return datetime.strptime(date_text, "%Y-%m-%d")
+
+    def validate_attribute(attr, attr_name):
+        if attr is None:
+            raise InvalidUsage('Please provide ' + attr_name + ' in your request!', status_code=400)
+        return attr
 
     @app.route('/rates', methods=['GET'])
     def rates():
@@ -63,33 +69,15 @@ def create_app(config_name):
             results = []
 
             # parsing get request arguments
-            if request.args.get('date_from') is None:
-                raise InvalidUsage('Please provide date_from in your request!', status_code=400)
-            else:
-                date_from = request.args.get('date_from')
-
-            if request.args.get('date_to') is None:
-                raise InvalidUsage('Please provide date_to in your request!', status_code=400)
-            else:
-                date_to = request.args.get('date_to')
-
-            # validate correct data input
-            validate(date_to)
-            validate(date_from)
+            date_from = validate_attribute(request.args.get('date_from'),'date_from')
+            date_to = validate_attribute(request.args.get('date_to'), 'date_to')
 
             # check if date_from less than or equal to date_to
-            if datetime.strptime(date_from, "%Y-%m-%d") > datetime.strptime(date_to, "%Y-%m-%d"):
+            if validate_date(date_from) > validate_date(date_to):
                 raise InvalidUsage('Please check dates range, date_to must not be less than date_from!', status_code=400)
 
-            if request.args.get('origin') is None:
-                raise InvalidUsage('Please provide origin in your request!', status_code=400)
-            else:
-                origin = request.args.get('origin')
-
-            if request.args.get('destination') is None:
-                raise InvalidUsage('Please provide destination in your request!', status_code=400)
-            else:
-                destination = request.args.get('destination')
+            origin = validate_attribute(request.args.get('origin'), 'origin')
+            destination = validate_attribute(request.args.get('destination'), 'destination')
 
             # Try to connect
             try:
@@ -110,6 +98,26 @@ def create_app(config_name):
             except:
                 raise InvalidUsage('I am unable to connect to the database OR something went wrong with the query.!',
                                    status_code=500)
+
+            response = jsonify(results)
+            response.status_code = 200
+            return response
+        elif request.method == "POST":
+            # POST
+            results = []
+
+            # parsing get request arguments
+            date_from = validate_attribute(request.args.get('date_from'),'date_from')
+            date_to = validate_attribute(request.args.get('date_to'), 'date_to')
+
+            # check if date_from less than or equal to date_to
+            if validate_date(date_from) > validate_date(date_to):
+                raise InvalidUsage('Please check dates range, date_to must not be less than date_from!', status_code=400)
+
+            origin_code = validate_attribute(request.args.get('origin_code'), 'origin_code')
+            destination_code = validate_attribute(request.args.get('destination_code'), 'destination_code')
+
+
 
             response = jsonify(results)
             response.status_code = 200
