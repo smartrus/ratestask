@@ -21,7 +21,7 @@ def create_app(config_name):
 
     @app.route('/rates', methods=['GET'])
     def rates():
-        global conn
+        global conn, query
         if request.method == "GET":
             # GET
             results = []
@@ -34,10 +34,17 @@ def create_app(config_name):
 
             # Try to connect
             try:
+                query = """SELECT * FROM prices WHERE (day BETWEEN %s AND %s)
+                            AND (orig_code = %s OR orig_code IN (SELECT code FROM ports WHERE parent_slug = %s)
+                              OR orig_code IN (SELECT code FROM ports WHERE parent_slug IN
+                                (SELECT slug FROM regions WHERE parent_slug = %s)))
+                            AND (dest_code = %s OR dest_code IN (SELECT code FROM ports WHERE parent_slug = %s)
+                              OR dest_code IN (SELECT code FROM ports WHERE parent_slug IN
+                                (SELECT slug FROM regions WHERE parent_slug = %s)))"""
                 conn = psycopg2.connect("host='127.0.0.1' dbname='postgres' user='postgres' password=''")
                 cur = conn.cursor(cursor_factory=RealDictCursor)
-                # cur.execute("""SELECT * FROM prices""")
-                cur.execute("SELECT * FROM prices WHERE orig_code = %s", [(origin)])
+                cur.execute(query,(date_from, date_to, origin, origin, origin, destination, destination, destination))
+
                 obj = json.dumps(cur.fetchall(), indent=2)
                 results.append(obj)
             except:
