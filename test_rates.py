@@ -74,7 +74,7 @@ class RatesTestCase(unittest.TestCase):
     def test_api_with_incorrect_date_from(self):
         """Check a get request with incorrect strings in date_from."""
         result = self.client().get(
-            'rates?date_from=2016-01&date_to=2016-01-10&origin=north_europe_main')
+            'rates?date_from=2016-01&date_to=2016-01-10&origin=CNSGH&destination=north_europe_main')
         self.assertEqual(result.status_code, 400)
         self.assertIn('Incorrect date format', str(result.data))
 
@@ -82,13 +82,13 @@ class RatesTestCase(unittest.TestCase):
     def test_api_with_incorrect_date_to(self):
         """Check a get request with incorrect strings in date_to."""
         result = self.client().get(
-            'rates?date_from=2016-01-01&date_to=2016-010&origin=north_europe_main')
+            'rates?date_from=2016-01-01&date_to=2016-010&origin=CNSGH&destination=north_europe_main')
         self.assertEqual(result.status_code, 400)
         self.assertIn('Incorrect date format', str(result.data))
 
     # A get request with date_to greater than date_from
     def test_api_with_date_to_greater_than_date_from(self):
-        """Check a get request with incorrect strings in date_to."""
+        """Check a get request with date_to greater than date_from"""
         result = self.client().get(
             'rates?date_from=2016-02-01&date_to=2016-01-10&origin=CNSGH&destination=north_europe_main')
         self.assertEqual(result.status_code, 400)
@@ -96,7 +96,7 @@ class RatesTestCase(unittest.TestCase):
 
     # A post request with no date_from
     def test_api_post_with_no_date_from(self):
-        """Check a get request with no date_from."""
+        """Check a post request with no date_from."""
         result = self.client().post('rates',
                                     data=dict(date_to='2018-02-10',
                                      price='1000', origin_code='CNSGH', destination_code='CNSGH'))
@@ -105,7 +105,7 @@ class RatesTestCase(unittest.TestCase):
 
     # A post request with no date_to
     def test_api_post_with_no_date_to(self):
-        """Check a get request with no date_to"""
+        """Check a post request with no date_to"""
         result = self.client().post('rates',
                                     data=dict(date_from='2018-02-01', price='1000', origin_code='CNSGH',
                                      destination_code='CNSGH'))
@@ -114,7 +114,7 @@ class RatesTestCase(unittest.TestCase):
 
     # A post request with no price
     def test_api_post_with_no_price(self):
-        """Check a get request with no price"""
+        """Check a post request with no price"""
         result = self.client().post('rates',
                                     data=dict(date_from='2018-02-01', date_to='2018-02-10', origin_code='CNSGH',
                                      destination_code='CNSGH'))
@@ -123,21 +123,39 @@ class RatesTestCase(unittest.TestCase):
 
     # A post request with no origin_code
     def test_api_post_with_no_origin_code(self):
-        """Check a get request with no origin_code"""
+        """Check a post request with no origin_code"""
         result = self.client().post('rates',
                                     data=dict(date_from='2018-02-01', date_to='2018-02-10', price='1000',
                                      destination_code='CNSGH'))
         self.assertEqual(result.status_code, 400)
         self.assertIn('provide origin_code', str(result.data))
 
-    # A post request with no origin_code
-    def test_api_post_with_no_origin_code(self):
-        """Check a get request with no origin_code"""
+    # A post request with no destination_code
+    def test_api_post_with_no_destination_code(self):
+        """Check a post request with no destination_code"""
         result = self.client().post('rates',
                                     data=dict(date_from='2018-02-01', date_to='2018-02-10', price='1000',
-                                     destination_code='CNSGH'))
+                                     origin_code='CNSGH'))
         self.assertEqual(result.status_code, 400)
-        self.assertIn('provide origin_code', str(result.data))
+        self.assertIn('provide destination_code', str(result.data))
+
+    # A post request with wrong price
+    def test_api_post_with_wrong_price(self):
+        """Check a post request with wrong price"""
+        result = self.client().post('rates',
+                                    data=dict(date_from='2018-02-01', date_to='2018-02-10', price='100xx',
+                                     origin_code='CNSGH', destination_code='CNSGH'))
+        self.assertEqual(result.status_code, 400)
+        self.assertIn('Incorrect price', str(result.data))
+
+    # A post request to insert data
+    def test_api_post_insert(self):
+        """Check a post request to insert data"""
+        result = self.client().post('rates',
+                                    data=dict(date_from='2018-02-01', date_to='2018-02-10', price='1000',
+                                     origin_code='CNSGH', destination_code='CNSGH'))
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('true', str(result.data))
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
